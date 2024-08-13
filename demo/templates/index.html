@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* Phần tử cha của tiêu đề (ví dụ: header) */
+        header {
+            border-radius: 15px;
+            background-color: #1DB954;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            text-align: center;
+            color: #ffffff;
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        body {
+            background-color: #F8F8F8;
+            display: flex;
+            font-family: 'Montserrat', sans-serif;
+            margin: 0;
+        }
+
+        .left-column {
+            flex: 1;
+            padding: 20px;
+        }
+
+        .right-column {
+            width: 700px;
+            background-color: #FFFFFF;
+            padding: 20px;
+            border-left: 1px solid #E0E0E0;
+            box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #E0E0E0;
+            border-radius: 4px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #1DB954;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            margin-left: 10px;
+        }
+
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #333333;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            background-color: #FFFFFF;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #E0E0E0;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        li:hover {
+            background-color: #F0F0F0;
+        }
+
+        #spotify-track {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        #spotify-iframe {
+            width: 100%;
+            height: 300px;
+            border: none;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Hệ thống nghe nhạc</h1>
+    </header>
+    <div class="left-column">
+        <form action="/" method="post">
+            <input type="text" name="input_song_name" placeholder="Tìm kiếm tên bài hát">
+            <input type="submit" value="Nhận gợi ý">
+        </form>
+        {% if input_song_name %}
+        <h2>Gợi ý cho '{{ input_song_name }}':</h2>
+        <ul>
+            {% if hybrid_recommendations is not none and not hybrid_recommendations.empty %}
+            {% for index, recommendation in hybrid_recommendations.iterrows() %}
+            {% set track_id = external_urls[recommendation['Track Name']]['id'] if recommendation['Track Name'] in external_urls.keys() else '' %}
+            <li class="song-name" data-track-id="{{ track_id }}">{{ recommendation['Track Name'] }}</li>
+            {% endfor %}
+            {% else %}
+            <li>Không có gợi ý nào.</li>
+            {% endif %}
+        </ul>
+        {% endif %}
+    </div>
+    <div class="right-column">
+      {% if random_recommendations is defined and (random_recommendations is not none and not random_recommendations.empty) %}
+      <h2>Gợi ý ngẫu nhiên:</h2>
+      <ul>
+          {% for index, recommendation in random_recommendations.iterrows() %}
+          {% set track_id = external_urls[recommendation['Track Name']]['id'] if recommendation['Track Name'] in external_urls.keys() else '' %}
+          <li class="song-name" data-track-id="{{ track_id }}">{{ recommendation['Track Name'] }}</li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+
+   <!-- Spotify iframe -->
+   <div id="spotify-track">
+    <iframe id="spotify-iframe" style="border-radius: 12px;" src="" width="100%" height="152" frameborder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.querySelectorAll('.song-name').forEach(item => {
+        item.addEventListener('click', event => {
+            const trackId = item.getAttribute('data-track-id');
+            const spotifyIframe = document.getElementById('spotify-iframe');
+            spotifyIframe.src = `https://open.spotify.com/embed/track/${trackId}?utm_source=generator`;
+        });
+    });
+</script>
+</body>
+</html>
